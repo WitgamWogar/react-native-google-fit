@@ -87,7 +87,7 @@ public class GoogleFitManager implements
         return distanceHistory;
     }
 
-    public void authorize(@Nullable final Callback errorCallback, @Nullable final Callback successCallback) {
+    public void authorize(@Nullable final Callback errorCallback, @Nullable final Callback successCallback, @Nullable final Callback checkOnlyCallback) {
 
         //Log.i(TAG, "Authorizing");
         mApiClient = new GoogleApiClient.Builder(mReactContext.getApplicationContext())
@@ -123,11 +123,14 @@ public class GoogleFitManager implements
                     new GoogleApiClient.OnConnectionFailedListener() {
                         @Override
                         public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-                            Log.i(TAG, "Authorization - Failed Authorization Mgr:" + connectionResult);
-                            if (mAuthInProgress) {
-                                //if (errorCallback != null) {
-                                //    errorCallback.invoke("Failed Authorization Mgr");
-                                //}
+                            if (mAuthInProgress || checkOnlyCallback != null) {
+                                WritableMap map = Arguments.createMap();
+                                map.putBoolean("authorized", false);
+                                if (checkOnlyCallback != null) {
+                                    checkOnlyCallback.invoke(map);
+                                } else if (errorCallback != null) {
+                                    errorCallback.invoke(map);
+                                }
                             } else {
                                 try {
                                     mAuthInProgress = true;

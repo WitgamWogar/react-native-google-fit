@@ -59,7 +59,25 @@ public class GoogleFitModule extends ReactContextBaseJavaModule {
             return;
         }
 
-        googleFitManager.authorize(error, success);
+        googleFitManager.authorize(error, success, null);
+    }
+
+    @ReactMethod
+    public void checkAuthorization(Callback error, Callback success, Callback checkOnly) {
+        final Activity activity = getCurrentActivity();
+
+        if (googleFitManager == null) {
+            googleFitManager = new GoogleFitManager(mReactContext, activity);
+        }
+
+        if (googleFitManager.isAuthorize()) {
+            WritableMap map = Arguments.createMap();
+            map.putBoolean("authorized", true);
+            success.invoke(map);
+            return;
+        }
+
+        googleFitManager.authorize(error, success, checkOnly);
     }
 
     @ReactMethod

@@ -18,6 +18,14 @@ class RNGoogleFit {
         );
     }
 
+    checkAuthorization(callback) {
+        googleFit.checkAuthorization(
+            msg => callback(msg, false),
+            res => callback(false, res),
+            checkRes => callback(false, checkRes)
+        );
+    }
+
     //Will be deprecated in future releases
     getSteps(dayStart,dayEnd) {
         googleFit.getDailySteps(Date.parse(dayStart), Date.parse(dayEnd));
