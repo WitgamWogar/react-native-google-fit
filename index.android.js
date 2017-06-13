@@ -46,7 +46,7 @@ class RNGoogleFit {
     getDailyStepCountSamples(options, callback) {
         let startDate = options.startDate != undefined ? Date.parse(options.startDate) : (new Date()).setHours(0,0,0,0);
         let endDate = options.endDate != undefined ? Date.parse(options.endDate) : (new Date()).valueOf();
-        googleFit.getDailyStepCountSamples( startDate,
+        googleFit.getDailyStepCountSamples(startDate,
             endDate,
             (msg) => {
                 callback(msg, false);
@@ -64,6 +64,19 @@ class RNGoogleFit {
                     callback("There is no any steps data for this period", false);
                 }
             });
+    }
+
+    getTotalStepsForRange (options, callback) {
+        this.getDailyStepCountSamples(options, (msg, results) => {
+            var total = 0;
+            var googleFitResults = results[0] ? results[0].steps : [];
+
+            for (let i = 0; i < googleFitResults.length; i++) {
+                total += googleFitResults[i].value;
+            }
+
+            callback(msg, total);
+        });
     }
 
     buildDailySteps(steps)
