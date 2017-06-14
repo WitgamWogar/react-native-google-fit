@@ -122,6 +122,16 @@ public class GoogleFitModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void getDistanceByActivity(double startDate, double endDate, String activity, Callback errorCallback, Callback successCallback) {
+
+        try {
+            successCallback.invoke(googleFitManager.getDistanceHistory().aggregateDataByActivity((long)startDate, (long)endDate, activity));
+        } catch (IllegalViewOperationException e) {
+            errorCallback.invoke(e.getMessage());
+        }
+    }
+
+    @ReactMethod
     public void getWeightSamples(double startDate,
                                  double endDate,
                                  Callback errorCallback,

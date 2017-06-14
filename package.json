@@ -1,31 +1,77 @@
 {
-  "name": "react-native-google-fit",
-  "version": "0.2.0",
-  "description": "A React Native bridge module for interacting with Google Fit",
-  "main": "index.android.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "_args": [
+    [
+      "react-native-google-fit@github:witgamwogar/react-native-google-fit#master",
+      "/Users/totto/workspace/AlethiaCompanion"
+    ]
+  ],
+  "_from": "witgamwogar/react-native-google-fit#master",
+  "_id": "react-native-google-fit@0.2.0",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/react-native-google-fit",
+  "_phantomChildren": {},
+  "_requested": {
+    "hosted": {
+      "directUrl": "https://raw.githubusercontent.com/witgamwogar/react-native-google-fit/master/package.json",
+      "gitUrl": "git://github.com/witgamwogar/react-native-google-fit.git#master",
+      "httpsUrl": "git+https://github.com/witgamwogar/react-native-google-fit.git#master",
+      "shortcut": "github:witgamwogar/react-native-google-fit#master",
+      "ssh": "git@github.com:witgamwogar/react-native-google-fit.git#master",
+      "sshUrl": "git+ssh://git@github.com/witgamwogar/react-native-google-fit.git#master",
+      "type": "github"
+    },
+    "name": "react-native-google-fit",
+    "raw": "react-native-google-fit@github:witgamwogar/react-native-google-fit#master",
+    "rawSpec": "github:witgamwogar/react-native-google-fit#master",
+    "scope": null,
+    "spec": "github:witgamwogar/react-native-google-fit#master",
+    "type": "hosted"
   },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "git://github.com/witgamwogar/react-native-google-fit.git#3c992dc8ba82ecc5934f25c1493ef9f8faa29d85",
+  "_shasum": "60b4ca24207376f3476100749034720f781befe5",
+  "_shrinkwrap": null,
+  "_spec": "react-native-google-fit@github:witgamwogar/react-native-google-fit#master",
+  "_where": "/Users/totto/workspace/AlethiaCompanion",
+  "author": {
+    "name": "Stanislav Doskalenko"
+  },
+  "bugs": {
+    "url": "https://github.com/StasDoskalenko/react-native-google-fit/issues"
+  },
+  "dependencies": {},
+  "description": "A React Native bridge module for interacting with Google Fit",
+  "devDependencies": {},
+  "gitHead": "3c992dc8ba82ecc5934f25c1493ef9f8faa29d85",
+  "homepage": "https://github.com/StasDoskalenko/react-native-google-fit#readme",
   "keywords": [
-    "react-native",
-    "google-fit",
     "Google",
+    "ReactNative",
+    "android",
+    "fit",
+    "fitness",
+    "google fit",
+    "google-fit",
     "health",
     "healthkit",
-    "fit",
-    "google fit",
-    "android",
-    "fitness",
     "native",
-    "ReactNative"
+    "react-native"
   ],
-  "author": "Stanislav Doskalenko",
   "license": "MIT",
+  "main": "index.android.js",
+  "name": "react-native-google-fit",
+  "optionalDependencies": {},
+  "readme": "\n# react-native-google-fit\n[![npm version](https://badge.fury.io/js/react-native-google-fit.svg)](https://badge.fury.io/js/react-native-google-fit) ![Downloads](https://img.shields.io/npm/dm/react-native-google-fit.svg)\n\nA React Native bridge module for interacting with Google Fit\n\nChangelog:\n\n```\n0.2.0   - getDailyDistanceSamples();\n        - isAvailable();\n        - isEnabled();\n        - deleteWeight(); \n0.1.1-beta\n        - getDailyStepCountSamples method compatible with Apple Healthkit module\n        - started to implement JSDoc documentation\n\n0.1.0\n        - getting activity within module itself\n        - fixed package name dependency\n        - provided more detailed documentation\n\n0.0.9   - Weights Save Support\n        - Refactor methods to be compatible with react-native-apple-healthkit module\n        - Remove 'moment.js' dependency\n\n0.0.8   - Weights Samples support\n\n0.0.1   - 0.0.7 Initial builds\n\n```\n\n### Getting started\n\n`$ npm install react-native-google-fit --save`\n\n### Enable Google Fitness API for your application\n\nIn order for your app to communicate properly with the Google Fitness API you need to enable Google Fit API in your Google API Console.\nAlso you need to generate new client ID for your app and provide both debug and release SHA keys.\nAnother step is to configure the consent screen, etc.\n\nMore detailed info available at\nhttps://developers.google.com/fit/android/get-api-key\n\n### Mostly Automatic installation\n\n`$ react-native link react-native-google-fit`\n\nthen pass your package name to the module in MainApplication.java (google fit requires package name to save data)\n\n\n`new GoogleFitPackage(BuildConfig.APPLICATION_ID)`\n\n### Manual installation\n\n1. Open up `android/app/src/main/java/[...]/MainApplication.java`\n  - Add `import com.reactnative.googlefit.GoogleFitPackage;` to the imports at the top of the file\n  - Add `new GoogleFitPackage(BuildConfig.APPLICATION_ID),` to the list returned by the `getPackages()` method\n2. Append the following lines to `android/settings.gradle`:\n  \t```\n  \t include ':react-native-google-fit'\n    project(':react-native-google-fit').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-google-fit/android')\n  \t```\n3. Insert the following lines inside the dependencies block in `android/app/build.gradle`:\n  \t```\n      compile project(':react-native-google-fit')\n  \t```\n  \t\n  \t\n### USAGE\n\n1. `import GoogleFit from 'react-native-google-fit';`\n\n2. Authorize:\n\n```      \n        GoogleFit.authorizeFit();\n        GoogleFit.onAuthorize((result) => {\n             //console.log(result);\n             dispatch('AUTH SUCCESS');\n        });\n ```\n \n3. Retrieve Steps For Period\n \n GoogleFit.getSteps(dayStart, dayEnd);\n \n REDUX example\n \n ```\n    \n    let retrieveDailySteps = () => {\n        return async (dispatch) => {\n            let todayStart = \"2017-01-01T00:00:17.971Z\"; //ISO Time String\n            let dayEnd = \"2017-01-01T23:59:17.971Z\"; //ISO Time String\n            await GoogleFit.getSteps(todayStart, dayEnd);\n            await GoogleFit.observeHistory((results) => {\n                if (results.length > 0) {\n                    console.log(results[0].steps);\n                    dispatch('SUCCESSFULLY GOT DAILY STEPS!');\n                } \n            });\n        }\n    }\n \n ```\n\n4. Retrieve Weights\n\n ```\n\n let opt =   {\n                unit: 'pound',\t\t\t\t\t\t\t\t\t\t// required; default 'kg'\n                startDate: \"2017-01-01T00:00:17.971Z\",\t\t        // required\n                endDate: (new Date()).toISOString(),\t\t\t\t// required\n                ascending: false\t\t\t\t\t\t\t\t\t// optional; default false\n             };\n             \n GoogleFit.getWeightSamples(opt, (err,res) => {\n        console.log(res);\n });\n\n ```\n\n\n5. Save Weights\n\n ```\n\n    let opt =   {\n                    value: 200,\n                    date: (new Date().toISOString()),\n                    unit: \"pound\"\n                };\n    GoogleFit.saveWeight(opt, (err, res)=> {\n         if (err) throw 'Cant save data to the Google Fit';\n    });\n\n ```\n\n\n6. Other methods:\n \n ``` \n observeSteps(callback); //On Step Changed Event\n \n unsucscribeListeners(); //Put into componentWillUnmount() method to prevent leaks\n \n getDailyDistanceSamples(options, callback); - method to get daily distance\n \n isAvailable(callback); - Checks is GoogleFit available for current account / installed on device\n \n isEnabled(callback); - Checks is permissions granted\n \n deleteWeight(options, callback); - method to delete weights by options (same as in save weights)\n \n ```\n \n### PLANS / TODO\n \n * support of all Google Fit activity types\n * code refactoring\n * optimization \n \n Copyright (c) 2017-present, Stanislav Doskalenko\n doskalenko.s@gmail.com\n \n Based on Asim Malik android source code, copyright (c) 2015, thanks mate!",
+  "readmeFilename": "README.md",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/StasDoskalenko/react-native-google-fit.git"
   },
-  "bugs": {
-    "url": "https://github.com/StasDoskalenko/react-native-google-fit/issues"
-  }
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "0.2.0"
 }

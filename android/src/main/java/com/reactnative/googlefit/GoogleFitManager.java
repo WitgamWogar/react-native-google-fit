@@ -52,8 +52,6 @@ public class GoogleFitManager implements
     private static final String TAG = "RNGoogleFit";
 
     public GoogleFitManager(ReactContext reactContext, Activity activity) {
-
-        //Log.i(TAG, "Initializing GoogleFitManager" + mAuthInProgress);
         this.mReactContext = reactContext;
         this.mActivity = activity;
 
@@ -88,8 +86,6 @@ public class GoogleFitManager implements
     }
 
     public void authorize(@Nullable final Callback errorCallback, @Nullable final Callback successCallback, @Nullable final Callback checkOnlyCallback) {
-
-        //Log.i(TAG, "Authorizing");
         mApiClient = new GoogleApiClient.Builder(mReactContext.getApplicationContext())
                 .addApi(Fitness.SENSORS_API)
                 .addApi(Fitness.HISTORY_API)
@@ -100,9 +96,6 @@ public class GoogleFitManager implements
                     new GoogleApiClient.ConnectionCallbacks() {
                         @Override
                         public void onConnected(@Nullable Bundle bundle) {
-                            Log.i(TAG, "Authorization - Connected");
-
-                            //sendEvent(this.mReactContext, "AuthorizeEvent", map);
                             if (successCallback != null) {
                                 WritableMap map = Arguments.createMap();
                                 map.putBoolean("authorized", true);
@@ -112,7 +105,6 @@ public class GoogleFitManager implements
 
                         @Override
                         public void onConnectionSuspended(int i) {
-                            Log.i(TAG, "Authorization - Connection Suspended");
                             if ((mApiClient != null) && (mApiClient.isConnected())) {
                                 mApiClient.disconnect();
                             }
@@ -179,23 +171,14 @@ public class GoogleFitManager implements
 
     @Override
     public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
-        Log.i(TAG, "onActivityResult: " + requestCode);
         if (requestCode == REQUEST_OAUTH) {
-
             mAuthInProgress = false;
             if (resultCode == Activity.RESULT_OK) {
                 if (!mApiClient.isConnecting() && !mApiClient.isConnected()) {
                     mApiClient.connect();
                 }
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-                //Log.e(TAG, "RESULT_CANCELED");
-                //this.authorize(null, null);
-                //mApiClient.connect();
             }
-        } //else {
-        //Log.e(TAG, "requestCode NOT request_oauth");
-        //}
-
+        }
     }
 
     @Override

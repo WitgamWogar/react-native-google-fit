@@ -46,6 +46,7 @@ class RNGoogleFit {
     getDailyStepCountSamples(options, callback) {
         let startDate = options.startDate != undefined ? Date.parse(options.startDate) : (new Date()).setHours(0,0,0,0);
         let endDate = options.endDate != undefined ? Date.parse(options.endDate) : (new Date()).valueOf();
+
         googleFit.getDailyStepCountSamples(startDate,
             endDate,
             (msg) => {
@@ -113,8 +114,10 @@ class RNGoogleFit {
      */
 
     getDailyDistanceSamples(options, callback) {
-        let startDate = Date.parse(options.startDate);
-        let endDate = Date.parse(options.endDate);
+        let formattedDates = this.formatRangeDates(options),
+            startDate = formattedDates.startDate,
+            endDate = formattedDates.endDate;
+
         googleFit.getDailyDistanceSamples( startDate,
             endDate,
             (msg) => {
@@ -132,6 +135,27 @@ class RNGoogleFit {
                     callback(false, res.filter(day => day != undefined));
                 } else {
                     callback("There is no any distance data for this period", false);
+                }
+            });
+    }
+
+    getDistanceByActivity (options, callback) {
+        let formattedDates = this.formatRangeDates(options),
+            startDate = formattedDates.startDate,
+            endDate = formattedDates.endDate;
+
+        googleFit.getDistanceByActivity(startDate,
+            endDate,
+            options.activity || "walking",
+            (msg) => {
+                callback(null);
+            },
+            (res) => {
+                let distance = res.length && res[0] && res[0].distance ? res[0].distance : null;
+                if (distance) {
+                    callback(distance);
+                } else {
+                    callback(null);
                 }
             });
     }
@@ -254,6 +278,13 @@ class RNGoogleFit {
 
     KgToLbs(metric) {
         return metric * 2.2046;
+    }
+
+    formatRangeDates (dateData) {
+        return {
+            startDate: dateData.startDate != undefined ? Date.parse(dateData.startDate) : (new Date()).setHours(0,0,0,0),
+            endDate: dateData.endDate != undefined ? Date.parse(dateData.endDate) : (new Date()).getTime()
+        };
     }
 
 }
