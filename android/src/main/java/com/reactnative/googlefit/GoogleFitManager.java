@@ -19,8 +19,8 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.facebook.react.bridge.ActivityEventListener;
-import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
@@ -48,6 +48,7 @@ public class GoogleFitManager implements
     private WeightsHistory weightsHistory;
     private StepCounter mStepCounter;
     private StepSensor stepSensor;
+    private Promise mAuthorizationPromise;
 
     private static final String TAG = "RNGoogleFit";
 
@@ -85,7 +86,8 @@ public class GoogleFitManager implements
         return distanceHistory;
     }
 
-    public void authorize(@Nullable final Callback errorCallback, @Nullable final Callback successCallback, @Nullable final Callback checkOnlyCallback) {
+    public void authorize(@Nullable final Boolean checkOnly, final Promise promise) {
+        mAuthorizationPromise = promise;
         mApiClient = new GoogleApiClient.Builder(mReactContext.getApplicationContext())
                 .addApi(Fitness.SENSORS_API)
                 .addApi(Fitness.HISTORY_API)
@@ -96,11 +98,11 @@ public class GoogleFitManager implements
                     new GoogleApiClient.ConnectionCallbacks() {
                         @Override
                         public void onConnected(@Nullable Bundle bundle) {
-                            if (successCallback != null) {
-                                WritableMap map = Arguments.createMap();
-                                map.putBoolean("authorized", true);
-                                successCallback.invoke(map);
-                            }
+                            WritableMap map = Arguments.createMap();
+                            map.putBoolean("authorized", true);
+                            mAuthorizationPromise.resolve(map);
+                            mAuthorizationPromise = null;
+                            //successCallback.invoke(map);
                         }
 
                         @Override
@@ -115,14 +117,11 @@ public class GoogleFitManager implements
                     new GoogleApiClient.OnConnectionFailedListener() {
                         @Override
                         public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-                            if (mAuthInProgress || checkOnlyCallback != null) {
+                            if (mAuthInProgress || (checkOnly != null && checkOnly != false)) {
                                 WritableMap map = Arguments.createMap();
                                 map.putBoolean("authorized", false);
-                                if (checkOnlyCallback != null) {
-                                    checkOnlyCallback.invoke(map);
-                                } else if (errorCallback != null) {
-                                    errorCallback.invoke(map);
-                                }
+                                mAuthorizationPromise.resolve(map);
+                                mAuthorizationPromise = null;
                             } else {
                                 try {
                                     mAuthInProgress = true;

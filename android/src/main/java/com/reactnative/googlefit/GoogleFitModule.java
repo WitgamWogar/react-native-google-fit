@@ -21,11 +21,14 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Promise;
 
 import com.facebook.react.uimanager.IllegalViewOperationException;
 
 
 public class GoogleFitModule extends ReactContextBaseJavaModule {
+
+    private static final String E_LAYOUT_ERROR = "E_LAYOUT_ERROR";
 
     private static final String REACT_MODULE = "RNGoogleFit";
     private ReactContext mReactContext;
@@ -45,39 +48,46 @@ public class GoogleFitModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void authorize(Callback error, Callback success) {
+    public void authorize(final Promise promise) {
         final Activity activity = getCurrentActivity();
 
-        if (googleFitManager == null) {
-            googleFitManager = new GoogleFitManager(mReactContext, activity);
-        }
+        try {
+            if (googleFitManager == null) {
+                googleFitManager = new GoogleFitManager(mReactContext, activity);
+            }
 
-        if (googleFitManager.isAuthorize()) {
-            WritableMap map = Arguments.createMap();
-            map.putBoolean("authorized", true);
-            success.invoke(map);
-            return;
-        }
+            if (googleFitManager.isAuthorize()) {
+                promise.resolve(true);
+                return;
+            }
 
-        googleFitManager.authorize(error, success, null);
+            googleFitManager.authorize(false, promise);
+        } catch (Exception e) {
+            promise.reject(e);
+        }
     }
 
     @ReactMethod
-    public void checkAuthorization(Callback error, Callback success, Callback checkOnly) {
+    public void checkAuthorization(final Promise promise) {
         final Activity activity = getCurrentActivity();
+        final Boolean checkOnly = true;
 
-        if (googleFitManager == null) {
-            googleFitManager = new GoogleFitManager(mReactContext, activity);
+        try {
+            if (googleFitManager == null) {
+                googleFitManager = new GoogleFitManager(mReactContext, activity);
+            }
+
+            if (googleFitManager.isAuthorize()) {
+                WritableMap map = Arguments.createMap();
+                map.putBoolean("authorized", true);
+                promise.resolve(map);
+                return;
+            }
+
+            googleFitManager.authorize(checkOnly, promise);
+        } catch (Exception e) {
+            promise.reject(e);
         }
-
-        if (googleFitManager.isAuthorize()) {
-            WritableMap map = Arguments.createMap();
-            map.putBoolean("authorized", true);
-            success.invoke(map);
-            return;
-        }
-
-        googleFitManager.authorize(error, success, checkOnly);
     }
 
     @ReactMethod
@@ -166,11 +176,13 @@ public class GoogleFitModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void isAvailable(Callback errorCallback, Callback successCallback) { // true if GoogleFit installed
+    public void isAvailable(Promise promise) { // true if GoogleFit installed
         try {
-            successCallback.invoke(isAvailableCheck());
+            promise.resolve(isAvailableCheck());
+//            successCallback.invoke();
         } catch (IllegalViewOperationException e) {
-            errorCallback.invoke(e.getMessage());
+            promise.resolve(e.getMessage());
+//            errorCallback.invoke(e.getMessage());
         }
     }
 
