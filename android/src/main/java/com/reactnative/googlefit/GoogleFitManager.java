@@ -48,7 +48,6 @@ public class GoogleFitManager implements
     private WeightsHistory weightsHistory;
     private StepCounter mStepCounter;
     private StepSensor stepSensor;
-    private Promise mAuthorizationPromise;
 
     private static final String TAG = "RNGoogleFit";
 
@@ -87,7 +86,6 @@ public class GoogleFitManager implements
     }
 
     public void authorize(@Nullable final Boolean checkOnly, final Promise promise) {
-        mAuthorizationPromise = promise;
         mApiClient = new GoogleApiClient.Builder(mReactContext.getApplicationContext())
                 .addApi(Fitness.SENSORS_API)
                 .addApi(Fitness.HISTORY_API)
@@ -100,9 +98,7 @@ public class GoogleFitManager implements
                         public void onConnected(@Nullable Bundle bundle) {
                             WritableMap map = Arguments.createMap();
                             map.putBoolean("authorized", true);
-                            mAuthorizationPromise.resolve(map);
-                            mAuthorizationPromise = null;
-                            //successCallback.invoke(map);
+                            promise.resolve(map);
                         }
 
                         @Override
@@ -120,8 +116,7 @@ public class GoogleFitManager implements
                             if (mAuthInProgress || (checkOnly != null && checkOnly != false)) {
                                 WritableMap map = Arguments.createMap();
                                 map.putBoolean("authorized", false);
-                                mAuthorizationPromise.resolve(map);
-                                mAuthorizationPromise = null;
+                                promise.resolve(map);
                             } else {
                                 try {
                                     mAuthInProgress = true;
