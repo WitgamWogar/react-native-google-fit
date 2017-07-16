@@ -12,18 +12,22 @@ package com.reactnative.googlefit;
 
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.util.Log;
 
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 
 import com.facebook.react.uimanager.IllegalViewOperationException;
+
+import java.util.ArrayList;
 
 
 public class GoogleFitModule extends ReactContextBaseJavaModule {
@@ -34,6 +38,7 @@ public class GoogleFitModule extends ReactContextBaseJavaModule {
     private ReactContext mReactContext;
     private GoogleFitManager googleFitManager = null;
     private String GOOGLE_FIT_APP_URI = "com.google.android.apps.fitness";
+    private static final String TAG = "GoogleFitModule";
 
     public GoogleFitModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -132,10 +137,9 @@ public class GoogleFitModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void getDistanceByActivity(double startDate, double endDate, String activity, Callback errorCallback, Callback successCallback) {
-
+    public void getDistanceByActivityList(double startDate, double endDate, ReadableArray activityList, Callback errorCallback, Callback successCallback) {
         try {
-            successCallback.invoke(googleFitManager.getDistanceHistory().aggregateDataByActivity((long)startDate, (long)endDate, activity));
+            successCallback.invoke(googleFitManager.getDistanceHistory().aggregateDataByActivityList((long)startDate, (long)endDate, activityList));
         } catch (IllegalViewOperationException e) {
             errorCallback.invoke(e.getMessage());
         }

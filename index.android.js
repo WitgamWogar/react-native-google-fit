@@ -143,24 +143,19 @@ class RNGoogleFit {
             });
     }
 
-    getDistanceByActivity (options, callback) {
+    getDistanceByActivityList (options, callback) {
         let formattedDates = this.formatRangeDates(options),
             startDate = formattedDates.startDate,
             endDate = formattedDates.endDate;
 
-        googleFit.getDistanceByActivity(startDate,
+        googleFit.getDistanceByActivityList(startDate,
             endDate,
-            options.activity || "walking",
+            options.activityList || ["walking", "running", "biking"],
             (msg) => {
                 callback(null);
             },
             (res) => {
-                let distance = res.length && res[0] && res[0].distance ? res[0].distance : null;
-                if (distance) {
-                    callback(distance);
-                } else {
-                    callback(null);
-                }
+                callback(res);
             });
     }
 

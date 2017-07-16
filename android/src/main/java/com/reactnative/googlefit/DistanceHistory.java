@@ -12,9 +12,13 @@
 
 package com.reactnative.googlefit;
 
+import android.util.Log;
+
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableNativeArray;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.google.android.gms.fitness.Fitness;
@@ -27,6 +31,7 @@ import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.result.DataReadResult;
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -71,7 +76,8 @@ public class DistanceHistory {
         return map;
     }
 
-    public ReadableArray aggregateDataByActivity(long startTime, long endTime, String activity) {
+    public ReadableMap aggregateDataByActivityList(long startTime, long endTime, ReadableArray activityList) {
+        ArrayList activityArrayList = ((ReadableNativeArray) activityList).toArrayList();
         DataReadRequest readRequest = new DataReadRequest.Builder()
                 .aggregate(DataType.TYPE_DISTANCE_DELTA, DataType.AGGREGATE_DISTANCE_DELTA)
                 .aggregate(DataType.TYPE_ACTIVITY_SEGMENT, DataType.AGGREGATE_ACTIVITY_SUMMARY)
@@ -81,15 +87,14 @@ public class DistanceHistory {
 
         DataReadResult dataReadResult = Fitness.HistoryApi.readData(googleFitManager.getGoogleApiClient(), readRequest).await(1, TimeUnit.MINUTES);
 
-        WritableArray map = Arguments.createArray();
+        WritableMap map = Arguments.createMap();
         if (dataReadResult.getBuckets().size() > 0) {
             for (Bucket bucket : dataReadResult.getBuckets()) {
                 List<DataSet> dataSets = bucket.getDataSets();
                 String bucketActivity = bucket.getActivity();
-
-                if (activity.equals(bucketActivity)) {
+                if (activityArrayList.contains(bucketActivity)) {
                     for (DataSet dataSet : dataSets) {
-                        processDataSet(dataSet, map);
+                        processActivityDataSet(dataSet, map, bucketActivity);
                     }
                 }
             }
@@ -111,6 +116,16 @@ public class DistanceHistory {
                     distanceMap.putDouble("endDate", dp.getEndTime(TimeUnit.MILLISECONDS));
                     distanceMap.putDouble("distance", dp.getValue(field).asFloat());
                     map.pushMap(distanceMap);
+                }
+            }
+        }
+    }
+
+    private void processActivityDataSet(DataSet dataSet, WritableMap map, String activity) {
+        for (DataPoint dp : dataSet.getDataPoints()) {
+            for (Field field : dp.getDataType().getFields()) {
+                if (field.getName().equals("distance")) {
+                    map.putDouble(activity, dp.getValue(field).asFloat());
                 }
             }
         }
