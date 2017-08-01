@@ -29,11 +29,14 @@ import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.result.DataReadResult;
+
+import java.text.DateFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 
@@ -122,10 +125,17 @@ public class DistanceHistory {
     }
 
     private void processActivityDataSet(DataSet dataSet, WritableMap map, String activity) {
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+        df.setTimeZone(tz);
         for (DataPoint dp : dataSet.getDataPoints()) {
             for (Field field : dp.getDataType().getFields()) {
                 if (field.getName().equals("distance")) {
-                    map.putDouble(activity, dp.getValue(field).asFloat());
+                    WritableMap dataMap = Arguments.createMap();
+                    dataMap.putDouble("value", dp.getValue(field).asFloat());
+                    dataMap.putString("start_time", df.format(new Date(dp.getStartTime(TimeUnit.MILLISECONDS))).toString());
+                    dataMap.putString("end_time", df.format(new Date(dp.getEndTime(TimeUnit.MILLISECONDS))).toString());
+                    map.putMap(activity, dataMap);
                 }
             }
         }
