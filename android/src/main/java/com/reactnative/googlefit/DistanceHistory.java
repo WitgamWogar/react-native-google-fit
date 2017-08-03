@@ -21,6 +21,7 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableNativeArray;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.WritableNativeArray;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.data.Bucket;
 import com.google.android.gms.fitness.data.DataPoint;
@@ -29,14 +30,11 @@ import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.result.DataReadResult;
-
-import java.text.DateFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 
@@ -81,27 +79,32 @@ public class DistanceHistory {
 
     public ReadableMap aggregateDataByActivityList(long startTime, long endTime, ReadableArray activityList) {
         ArrayList activityArrayList = ((ReadableNativeArray) activityList).toArrayList();
+        WritableMap map = Arguments.createMap();
+
         DataReadRequest readRequest = new DataReadRequest.Builder()
                 .aggregate(DataType.TYPE_DISTANCE_DELTA, DataType.AGGREGATE_DISTANCE_DELTA)
                 .aggregate(DataType.TYPE_ACTIVITY_SEGMENT, DataType.AGGREGATE_ACTIVITY_SUMMARY)
-                .bucketByActivityType(1, TimeUnit.MILLISECONDS)
+                .bucketByActivitySegment(5, TimeUnit.MINUTES)
                 .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
                 .build();
 
         DataReadResult dataReadResult = Fitness.HistoryApi.readData(googleFitManager.getGoogleApiClient(), readRequest).await(1, TimeUnit.MINUTES);
 
-        WritableMap map = Arguments.createMap();
+        WritableArray dataArr = Arguments.createArray();
         if (dataReadResult.getBuckets().size() > 0) {
             for (Bucket bucket : dataReadResult.getBuckets()) {
                 List<DataSet> dataSets = bucket.getDataSets();
                 String bucketActivity = bucket.getActivity();
+                Log.i(TAG, bucketActivity);
                 if (activityArrayList.contains(bucketActivity)) {
                     for (DataSet dataSet : dataSets) {
-                        processActivityDataSet(dataSet, map, bucketActivity);
+                        processActivityDataSet(dataSet, dataArr, bucketActivity);
                     }
                 }
             }
         }
+
+        map.putArray("data", dataArr);
 
         return map;
     }
@@ -113,6 +116,7 @@ public class DistanceHistory {
 
             for (Field field : dp.getDataType().getFields()) {
                 if (field.getName().equals("distance")) {
+                    Log.i(TAG, "Adding Distance");
                     WritableMap distanceMap = Arguments.createMap();
                     distanceMap.putString("day", day);
                     distanceMap.putDouble("startDate", dp.getStartTime(TimeUnit.MILLISECONDS));
@@ -124,18 +128,16 @@ public class DistanceHistory {
         }
     }
 
-    private void processActivityDataSet(DataSet dataSet, WritableMap map, String activity) {
-        TimeZone tz = TimeZone.getTimeZone("UTC");
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-        df.setTimeZone(tz);
+    private void processActivityDataSet(DataSet dataSet, WritableArray dataArr, String activity) {
         for (DataPoint dp : dataSet.getDataPoints()) {
             for (Field field : dp.getDataType().getFields()) {
                 if (field.getName().equals("distance")) {
                     WritableMap dataMap = Arguments.createMap();
                     dataMap.putDouble("value", dp.getValue(field).asFloat());
-                    dataMap.putString("start_time", df.format(new Date(dp.getStartTime(TimeUnit.MILLISECONDS))).toString());
-                    dataMap.putString("end_time", df.format(new Date(dp.getEndTime(TimeUnit.MILLISECONDS))).toString());
-                    map.putMap(activity, dataMap);
+                    dataMap.putDouble("start_time", dp.getStartTime(TimeUnit.MILLISECONDS));
+                    dataMap.putDouble("end_time", dp.getEndTime(TimeUnit.MILLISECONDS));
+                    dataMap.putString("activity", activity);
+                    dataArr.pushMap(dataMap);
                 }
             }
         }
